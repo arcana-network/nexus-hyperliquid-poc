@@ -55,81 +55,81 @@ function injectNetworkInterceptor() {
             );
             return response;
           }
-          try {
-            const decodedResult = decodeFunctionResult({
-              abi: MulticallAbi,
-              functionName: "aggregate3",
-              data: responseData.result,
-            }) as { success: boolean; returnData: string }[];
-            const params = decoded.args![0] as {
-              target: string;
-              callData: `0x${string}`;
-              allowFailure: boolean;
-            }[];
-            const unifiedBalances = await fetchUnifiedBalances();
-            params.forEach((param, pIndex) => {
-              try {
-                const decodedParam = decodeFunctionData({
-                  abi: MulticallAbi,
-                  data: param.callData,
-                });
-                if (decodedParam.functionName !== "balanceOf") {
-                  return;
-                }
-                const index = unifiedBalances.findIndex((bal) =>
-                  bal.breakdown.find(
-                    (asset) =>
-                      asset.contractAddress.toLowerCase() ===
-                      param.target.toLowerCase()
-                  )
-                );
-                if (index === -1) {
-                  return;
-                }
-                const asset = unifiedBalances[index];
-                const actualAsset = asset.breakdown.find(
-                  (token) =>
-                    token.contractAddress.toLowerCase() ===
-                    param.target.toLowerCase()
-                );
-                decodedResult[pIndex].returnData = encodeFunctionResult({
-                  abi: MulticallAbi,
-                  functionName: "balanceOf",
-                  result: BigInt(
-                    new Decimal(asset.balance)
-                      .mul(
-                        Decimal.pow(10, actualAsset!.decimals || asset.decimals)
-                      )
-                      .floor()
-                      .toFixed()
-                  ),
-                });
-              } catch (error) {
-                console.error(
-                  "Failed to decode callData for target:",
-                  param.target,
-                  "Error:",
-                  error
-                );
+          // try {
+          const decodedResult = decodeFunctionResult({
+            abi: MulticallAbi,
+            functionName: "aggregate3",
+            data: responseData.result,
+          }) as { success: boolean; returnData: string }[];
+          const params = decoded.args![0] as {
+            target: string;
+            callData: `0x${string}`;
+            allowFailure: boolean;
+          }[];
+          const unifiedBalances = await fetchUnifiedBalances();
+          params.forEach((param, pIndex) => {
+            try {
+              const decodedParam = decodeFunctionData({
+                abi: MulticallAbi,
+                data: param.callData,
+              });
+              if (decodedParam.functionName !== "balanceOf") {
+                return;
               }
-            });
-            const modifiedResult = encodeFunctionResult({
-              abi: MulticallAbi,
-              functionName: "aggregate3",
-              result: decodedResult,
-            });
-            return createResponse({
-              jsonrpc: "2.0",
-              id: payload.id,
-              result: modifiedResult,
-            });
-          } catch (e) {
-            debugInfo(
-              "error occured, falling back to send original response",
-              e
-            );
-            return response;
-          }
+              const index = unifiedBalances.findIndex((bal) =>
+                bal.breakdown.find(
+                  (asset) =>
+                    asset.contractAddress.toLowerCase() ===
+                    param.target.toLowerCase()
+                )
+              );
+              if (index === -1) {
+                return;
+              }
+              const asset = unifiedBalances[index];
+              const actualAsset = asset.breakdown.find(
+                (token) =>
+                  token.contractAddress.toLowerCase() ===
+                  param.target.toLowerCase()
+              );
+              decodedResult[pIndex].returnData = encodeFunctionResult({
+                abi: MulticallAbi,
+                functionName: "balanceOf",
+                result: BigInt(
+                  new Decimal(asset.balance)
+                    .mul(
+                      Decimal.pow(10, actualAsset!.decimals || asset.decimals)
+                    )
+                    .floor()
+                    .toFixed()
+                ),
+              });
+            } catch (error) {
+              console.error(
+                "Failed to decode callData for target:",
+                param.target,
+                "Error:",
+                error
+              );
+            }
+          });
+          const modifiedResult = encodeFunctionResult({
+            abi: MulticallAbi,
+            functionName: "aggregate3",
+            result: decodedResult,
+          });
+          return createResponse({
+            jsonrpc: "2.0",
+            id: payload.id,
+            result: modifiedResult,
+          });
+          // } catch (e) {
+          //   debugInfo(
+          //     "error occured, falling back to send original response",
+          //     e
+          //   );
+          //   return response;
+          // }
         }
       }
     }

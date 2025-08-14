@@ -10,7 +10,7 @@
     "build-zip": "npm run build && npm run zip"
   },
   "dependencies": {
-    "@avail-project/nexus": "^0.1.3-dev.5",
+    "@arcana/ca-sdk": "^1.1.1",
     "dayjs": "^1.11.13",
     "decimal.js": "^10.6.0",
     "react": "^19.1.1",

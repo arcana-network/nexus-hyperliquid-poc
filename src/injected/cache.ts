@@ -1,4 +1,4 @@
-import { UserAsset } from "@avail-project/nexus/core";
+import { UserAsset } from "@arcana/ca-sdk";
 import { debugInfo } from "../utils/debug";
 
 const cacheKeys = {
